@@ -33,12 +33,24 @@ router.post('/books', (req, res) => {
     })
 })
 
+router.get('/books/delete/:id', (req, res) => {
+  const bookId = req.params.id;
+  Book.findByIdAndDelete(bookId)
+    .then(() => {
+      // redirect to the books list
+      res.redirect('/books')
+    })
+    .catch(err => {
+      console.log(err);
+    })
+})
+
 router.get('/books/edit/:id', (req, res) => {
   const bookId = req.params.id;
   Book.findById(bookId)
     .then(bookFromDB => {
       console.log(bookFromDB);
-      res.render('bookEdit', { book: bookFromDB, name: {} });
+      res.render('bookEdit', { book: bookFromDB });
     })
 })
 
