@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Book = require('../models/Book');
+const Author = require('../models/Author');
 
 router.get('/books', (req, res) => {
   // get all the books from the database -> find() returns all the documents
@@ -19,7 +20,8 @@ router.post('/books', (req, res) => {
   const description = req.body.description;
   const rating = req.body.rating;
   // const { title, author, decription, rating } = req.body; 
-  console.log(title, author, description, rating);
+  console.log('this is the author field: ', author);
+  // console.log(title, author, description, rating);
   Book.create({
     title: title,
     author: author,
@@ -55,13 +57,20 @@ router.get('/books/edit/:id', (req, res) => {
 })
 
 router.get('/books/add', (req, res) => {
-  res.render('bookForm');
+  Author.find()
+    .then(authorsFromDB => {
+      res.render('bookForm', { authors: authorsFromDB });
+    })
+    .catch(err => {
+      console.log(err);
+    })
 })
 
 router.get('/books/:id', (req, res) => {
   const bookId = req.params.id;
   // get the book with this id
   Book.findById(bookId)
+    .populate('author')
     .then(book => {
       console.log(book);
       // render a book details view
@@ -84,6 +93,22 @@ router.post('/books/edit/:id', (req, res) => {
   })
     .then(book => {
       res.redirect(`/books/${book._id}`);
+    })
+    .catch(err => {
+      console.log(err);
+    })
+})
+
+router.post('/books/:id/reviews', (req, res) => {
+  const bookId = req.params.id;
+  const user = req.body.user;
+  const comments = req.body.comments;
+  console.log(user, comments, bookId);
+  // const { user, comments } = req.body;
+  // Book.findByIdAndUpdate(bookId, { $push: { reviews: { user: user, comments: comments } } })
+  Book.findOneAndUpdate({ _id: bookId }, { $push: { reviews: { user: user, comments: comments } } })
+    .then(book => {
+      console.log(book);
     })
     .catch(err => {
       console.log(err);
